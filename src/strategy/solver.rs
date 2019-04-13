@@ -131,11 +131,12 @@ impl StrategySolver {
     /// Construct a new StrategySolver from a printout of cell candidates.
     /// This allows communicating the impossibility of some candidates, that aren't already
     /// trivially conflicting with entries.
+    #[allow(unused)] // it is used, but only in conditionally compiled tests
     pub(crate) fn from_grid_state_str(grid_state: &str) -> StrategySolver {
         let mut _grid_state = [CellState::Candidates(Set::NONE); 81];
         let entries = grid_state
             .lines()
-            .flat_map(|line| line.split_whitespace())
+            .flat_map(str::split_whitespace)
             .filter(|&entry| entry == "_" || entry.parse::<u32>().is_ok());
 
         for (cell_state, entry) in _grid_state.iter_mut().zip(entries) {
@@ -465,13 +466,13 @@ impl StrategySolver {
     }
 
     fn batch_insert_entries(&mut self, find_naked_singles: bool) -> Result<(), Unsolvable> {
-        self._batch_insert_entries(find_naked_singles)?;
+        self._batch_insert_entries()?;
         self._batch_remove_conflicts(find_naked_singles)
     }
 
     /// Insert all outstanding candidates without removing conflicting cells in neighboring cells.
     /// Errors, if two different digits are candidates for the same cell.
-    fn _batch_insert_entries(&mut self, find_naked_singles: bool) -> Result<(), Unsolvable> {
+    fn _batch_insert_entries(&mut self) -> Result<(), Unsolvable> {
         let (ld_cp, _, cell_poss_digits) = self.cell_poss_digits.get_mut();
         let (ld_zs, _, house_solved_digits) = self.house_solved_digits.get_mut();
         while self.deduced_entries.len() > *ld_cp as usize {
